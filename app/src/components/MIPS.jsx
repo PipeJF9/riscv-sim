@@ -4,7 +4,6 @@ import DropArea from "./Drop";
 import "../styles/MIPS.css";
 import RAMtable from "./RAMtable";
 import REGISTERtable from "./REGISTERtable";
-import CircuitImage from './Circuit';
 
 const initialRegisters = {
   zero: 0, at: 0, v0: 0, v1: 0,
@@ -124,7 +123,7 @@ const MIPS = () => {
           Simulate MIPS
         </button>
       </div>
-      <CircuitImage currentInstruction={currentInstruction} registers={registers} />
+      
       <div className="bottom-section">
         <RAMtable memory={memory} />
         <Debugger
