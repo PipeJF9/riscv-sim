@@ -100,9 +100,8 @@ export function XOR_bin(AA, BB) {
 export function SLL_bin(AA, BB) {
     const shiftAmount = parseInt(BB.slice(-5), 2);
     if (shiftAmount === 0) return AA;
-    const msb = AA[0];
-    const shiftedPart = AA.slice(shiftAmount+1, 32);
-    const result = msb + shiftedPart + '0'.repeat(shiftAmount);
+    const shiftedPart = AA.slice(shiftAmount, 32);
+    const result = shiftedPart + '0'.repeat(shiftAmount);
     return result.slice(0, 32);
 }
 export function SR_LA_bin(AA, BB, isArith) {
@@ -111,7 +110,7 @@ export function SR_LA_bin(AA, BB, isArith) {
 
     let shiftedPart;
     let result;
-    if (!isArith){
+    if (isArith){
         const msb = AA[0];
         shiftedPart = AA.slice(1, 32-shiftAmount);
         result = msb + '0'.repeat(shiftAmount) + shiftedPart;
@@ -126,7 +125,7 @@ export function SR_LA_bin(AA, BB, isArith) {
 // "11111111111111111111111111111111" "10000000000000000000000000000001"
 function main(){
     const num = -5
-    console.log(SR_LA_bin("11111000000000000000000100000011","11000000000000000000000000011111"))
+    console.log(SLL_bin("01111000000000000000000100000011","11000000000000000000000000000011"))
 }
 
 //main()
