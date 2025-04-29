@@ -106,19 +106,41 @@ export function translateInstructionToHex(instruction) {
     }
 
     let binary = "";
-
+    let binary_parts = {};
     switch (mapping.type) {
         case "R":
             const rd_r = getRegisterBinary(parts[1]);
             const rs1_r = getRegisterBinary(parts[2]);
             const rs2_r = getRegisterBinary(parts[3]);
             binary = `${mapping.funct7}${rs2_r}${rs1_r}${mapping.funct3}${rd_r}${mapping.opcode}`;
+            binary_parts = {
+                funct7: mapping.funct7,
+                rs2: rs2_r,
+                rs1: rs1_r,
+                funct3: mapping.funct3,
+                rd: rd_r,
+                opcode: mapping.opcode
+            };
             break;
         case "I":
             const rd_i = getRegisterBinary(parts[1]);
-            const imm_i = getImmediateBinary(parts[2], 12);
-            const rs1_i = getRegisterBinary(parts[3]);
+            let rs1_i = 0;
+            let imm_i = 0;
+            if(["lb", "lh", "lw", "lbu", "lhu"].includes(mnemonic)) {
+                imm_i = getImmediateBinary(parts[2], 12);
+                rs1_i = getRegisterBinary(parts[3]);
+            }else{
+                imm_i = getImmediateBinary(parts[3], 12);
+                rs1_i = getRegisterBinary(parts[2]);
+            }
             binary = `${imm_i}${rs1_i}${mapping.funct3}${rd_i}${mapping.opcode}`;
+            binary_parts = {
+                imm: imm_i,
+                rs1: rs1_i,
+                funct3: mapping.funct3,
+                rd: rd_i,
+                opcode: mapping.opcode
+            };
             break;
         case "S":
             const rs2_s = getRegisterBinary(parts[1]);
@@ -127,28 +149,54 @@ export function translateInstructionToHex(instruction) {
             const imm11_5 = offset_s.substring(0, 7);
             const imm4_0 = offset_s.substring(7);
             binary = `${imm11_5}${rs2_s}${rs1_s}${mapping.funct3}${imm4_0}${mapping.opcode}`;
+            binary_parts = {
+                offset: offset_s,
+                rs2: rs2_s,
+                rs1: rs1_s,
+                funct3: mapping.funct3,
+                imm11_5: imm11_5,
+                imm4_0: imm4_0,
+                opcode: mapping.opcode
+            };
             break;
         case "B":
             const rs1_b = getRegisterBinary(parts[1]);
             const rs2_b = getRegisterBinary(parts[2]);
             const offset_b = getImmediateBinary(parts[3], 13); // 12 bits + signo
             binary = `${offset_b[0]}${offset_b.slice(2,8)}${rs2_b}${rs1_b}${mapping.funct3}${offset_b.slice(8,12)}${offset_b[1]}${mapping.opcode}`;
+            binary_parts = {
+                offset: offset_b,
+                rs2: rs2_b,
+                rs1: rs1_b,
+                funct3: mapping.funct3,
+                opcode: mapping.opcode
+            };
             break;
         case "U":
             const rd_u = getRegisterBinary(parts[1]);
             const imm_u = getImmediateBinary(parts[2], 20);
             binary = `${imm_u}${rd_u}${mapping.opcode}`;
+            binary_parts = {
+                imm: imm_u,
+                rd: rd_u,
+                opcode: mapping.opcode
+            };
             break;
         case "J":
             const rd_j = getRegisterBinary(parts[1]);
             const offset_j = getImmediateBinary(parts[2], 21); // 20 bits + signo
             binary = `${offset_j[0]}${offset_j.slice(10,20)}${offset_j[9]}${offset_j.slice(1,9)}${rd_j}${mapping.opcode}`;
+            binary_parts = {
+                offset: offset_j,
+                rd: rd_j,
+                opcode: mapping.opcode
+            };
             break;
         default:
             return "Unknown Instruction Type";
     }
 
-    return binary;
+    return [binary, binary_parts];
 }
 
 // Funciones auxiliares para registros e inmediatos
@@ -280,10 +328,12 @@ export function translateRISCV(params) {
     let instruction = null;
     let hex = null;
     let binary = null;
-    // Determinar el formato de entrada y realizar la traducción correspondiente
+    let binary_parts = null;
+    // Determine if we have an instruction or hex value to translate
     if (params.instruction) {
-        // Si tenemos una instrucción, la convertimos a binario y hex
-        binary = translateInstructionToHex(params.instruction);
+        // if we have an instruction, we convert it to binary and hex
+        binary = translateInstructionToHex(params.instruction)[0];
+        binary_parts = translateInstructionToHex(params.instruction)[1];
         if (!binary || binary === "Unknown Instruction Type") {
             return { 
                 error: "error to translate instruction", 
@@ -317,6 +367,7 @@ export function translateRISCV(params) {
         hex = "0x" + hex.padStart(8, '0').toUpperCase();
         binary = hexToBinary(hex.replace(/^0x/i, "")).padStart(32, '0');
         instruction = translateHexToInstruction(hex.replace(/^0x/i, ""));
+        binary_parts = translateInstructionToHex(instruction)[1];
     } else {
         return { 
             error: "Send a valid instruction or hex",
@@ -326,6 +377,7 @@ export function translateRISCV(params) {
     return {
         instruction,
         hex,
-        binary
+        binary,
+        binary_parts
     };
 }
