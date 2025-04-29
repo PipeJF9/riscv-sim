@@ -122,12 +122,13 @@ export function SR_LA_bin(AA, BB, isArith) {
 }
 
 
-// "11111111111111111111111111111111" "10000000000000000000000000000001"
+// "11111111111111111111111111111111" "10000000000000000000000000000001" 00000000000010000000000000000011
 function main(){
-    const letra = "11111111111111111111111111111111";
+    const letra = "10000000000000000011";
     const num = -5;
-    console.log(intToBin32(-10000));
+    console.log();
+    console.log(SLL_bin(intToBin32(parseInt(letra,2)), "1100"));
 }
 
-main()
+//main()
 

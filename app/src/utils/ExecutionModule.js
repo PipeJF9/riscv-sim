@@ -36,7 +36,7 @@ export function intructionExecution(descInst, registers){
     }
 
     switch(opcode){
-        case "0110011": //TIPO-R
+        case "0110011": //TIPO-R -> | funct7 |  rs2  |  rs1  | funct3 |   rd   | opcode |
             switch(funct7){
                 case "0100000":
                     if (funct3=="000"){ // sub ✔?
@@ -76,7 +76,7 @@ export function intructionExecution(descInst, registers){
                     break;
             }
             break;
-        case "0010011": //TIPO-I ARITMETICAS
+        case "0010011": //TIPO-I ARITMETICAS -> |  imm[11:0]  |  rs1  | funct3 |  rd   | opcode |
             funct7 = imm.slice(0,7);
             let bExt = signedExtTo32(imm);
             switch(funct3){
@@ -110,10 +110,17 @@ export function intructionExecution(descInst, registers){
                     break;
             }
             break;
+        case "0110111": // lui ✔? //TIPO-U -> |     imm[31:12]     |  rd   | opcode |
+            registerStoring(registers, rd, SLL_bin(intToBin32(parseInt(imm,2)), "1100"));
+            break; 
+        case "0010111": // aupic ✔?
+            registerStoring(registers, rd, intToBin32(ADD_binToInt(registers["PC"],SLL_bin(intToBin32(parseInt(imm,2)), "1100"))));
+            break; 
     }
 }
 
 let regs = {
+    "PC":"00000000000000000000000000000100",
     "00000": "11111111111111111111111111111111",
     "00001": "11111111111111111111111111111110",
     "00010": "00000000000000000000000000000000",
@@ -148,14 +155,16 @@ let regs = {
     "11111": "00000000000000000000000000000000",
 }
 
+//|        TIPO-I          |          TIPO-U           |
+// immx12 = 1000000000011, immx20 = 00000000000000000000
 let prueba = {
-    "opcode": "0010011",
+    "opcode": "0010111",
     "rd": "00000",
     "rs1": "00001",
     "rs2": "00010",
     //"funct7": "0100000",
     "funct3": "010",
-    "imm":"1000000000011"
+    "imm":"11100000000000000111"
 }
 
 intructionExecution(prueba, regs)
