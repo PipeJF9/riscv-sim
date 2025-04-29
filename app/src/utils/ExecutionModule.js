@@ -1,6 +1,6 @@
-import { ADD_binToInt,SUB_binToInt,SLT_U_binToInt,intToBin32,AND_bin,OR_bin,XOR_bin,SLL_bin,SR_LA_bin} from "./OperationModule.js";
+import { ADD_binToInt,SUB_binToInt,SLT_U_binToInt,intToBin32,AND_bin,OR_bin,XOR_bin,SLL_bin,SR_LA_bin, signedExtTo32} from "./OperationModule.js";
 
-
+// ✖
 export function registerStoring(registers, reg, data){
     if (data.length !==32){
         console.log('No se recibió un número de 32bits');
@@ -27,11 +27,11 @@ export function intructionExecution(descInst, registers){
         funct3 = descInst.funct3;
     }
     let funct7;
-    if ('funct3' in descInst) {
+    if ('funct7' in descInst) {
         funct7 = descInst.funct7;
     }
     let imm;
-    if ('funct3' in descInst) {
+    if ('imm' in descInst) {
         imm = descInst.imm;
     }
 
@@ -40,7 +40,7 @@ export function intructionExecution(descInst, registers){
             switch(funct7){
                 case "0100000":
                     if (funct3=="000"){ // sub ✔?
-                        registerStoring(registers, rd, intToBin32(SUB_binToInt(registers[rs1],registers[rs2])))
+                        registerStoring(registers, rd, intToBin32(SUB_binToInt(registers[rs1],registers[rs2])));
                     }
                     if (funct3=="101"){ // sra ✔?
                         registerStoring(registers, rd, SR_LA_bin(registers[rs1],registers[rs2],1));
@@ -58,7 +58,7 @@ export function intructionExecution(descInst, registers){
                             registerStoring(registers, rd, intToBin32(SLT_U_binToInt(registers[rs1],registers[rs2])));
                             break;
                         case "011": // sltu ✔?
-                            registerStoring(registers, rd, intToBin32(SLT_U_binToInt(registers[rs1],registers[rs2])));
+                            registerStoring(registers, rd, intToBin32(SLT_U_binToInt(registers[rs1],registers[rs2],1)));
                             break;
                         case "100": // xor ✔?
                             registerStoring(registers, rd, XOR_bin(registers[rs1],registers[rs2]));
@@ -76,13 +76,47 @@ export function intructionExecution(descInst, registers){
                     break;
             }
             break;
+        case "0010011": //TIPO-I ARITMETICAS
+            funct7 = imm.slice(0,7);
+            let bExt = signedExtTo32(imm);
+            switch(funct3){
+                case "000": // addi ✔?
+                    registerStoring(registers, rd, intToBin32(ADD_binToInt(registers[rs1], bExt)));
+                    break;
+                case "001":
+                    if (funct7 == "0000000"){ // slli ✔?
+                        registerStoring(registers, rd, SLL_bin(registers[rs1],imm));}
+                    break;
+                case "010": // slti ✔?
+                    registerStoring(registers, rd, intToBin32(SLT_U_binToInt(registers[rs1], bExt)));
+                    break;
+                case "011": // sltiu ✔?
+                    registerStoring(registers, rd, intToBin32(SLT_U_binToInt(registers[rs1], bExt, 1)));
+                    break;
+                case "100": // xori ✔?
+                    registerStoring(registers, rd, XOR_bin(registers[rs1], bExt));
+                    break;
+                case "101":
+                    if (funct7 == "0000000"){ // srli ✔?
+                        registerStoring(registers, rd, SR_LA_bin(registers[rs1],imm));}
+                    if (funct7 == "0100000"){ // srai ✔?
+                        registerStoring(registers, rd, SR_LA_bin(registers[rs1],imm,1));}
+                    break;
+                case "110": // ori ✔?
+                    registerStoring(registers, rd, OR_bin(registers[rs1], bExt));
+                    break;
+                case "111": // andi ✔?
+                    registerStoring(registers, rd, AND_bin(registers[rs1], bExt));
+                    break;
+            }
+            break;
     }
 }
 
 let regs = {
     "00000": "11111111111111111111111111111111",
-    "00001": "11111000000000000000000100000011",
-    "00010": "11000000000000000000000000000011",
+    "00001": "11111111111111111111111111111110",
+    "00010": "00000000000000000000000000000000",
     "00011": "00000000000000000000000000000000",
     "00100": "00000000000000000000000000000000",
     "00101": "00000000000000000000000000000000",
@@ -115,14 +149,14 @@ let regs = {
 }
 
 let prueba = {
-    "opcode": "0110011",
+    "opcode": "0010011",
     "rd": "00000",
     "rs1": "00001",
     "rs2": "00010",
-    "funct7": "0100000",
-    "funct3": "101",
+    //"funct7": "0100000",
+    "funct3": "010",
+    "imm":"1000000000011"
 }
 
 intructionExecution(prueba, regs)
-console.log(regs["00001"])
 console.log(regs["00000"])

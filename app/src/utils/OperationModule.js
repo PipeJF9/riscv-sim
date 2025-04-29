@@ -13,21 +13,21 @@ export function isNegBin(bin){
 }
 export function signedExtTo32(bin) {
     // Validar longitud mínima
-    if (binario.length < 2) {
+    if (bin.length < 2) {
         console.log("La cadena binaria debe tener al menos 2 bits");
         return;
     }
-    const bitSigno = binario[0];
+    const bitSigno = bin[0];
     if (bitSigno === '0') {
-        if (binario.length > 32) {
-            return binario.slice(-32);
+        if (bin.length > 32) {
+            return bin.slice(-32);
         }
-        return binario.padStart(32, '0');
+        return bin.padStart(32, '0');
     } else {
-        if (binario.length > 32) {
-            return bitSigno + binario.slice(1, 32);
+        if (bin.length > 32) {
+            return bitSigno + bin.slice(1, 32);
         }
-        return bitSigno + binario.slice(1).padStart(31, '1');
+        return bitSigno + bin.slice(1).padStart(31, '1');
     }
 }
 export function intToBin32(num){
@@ -124,9 +124,10 @@ export function SR_LA_bin(AA, BB, isArith) {
 
 // "11111111111111111111111111111111" "10000000000000000000000000000001"
 function main(){
-    const num = -5
-    console.log(SLL_bin("01111000000000000000000100000011","11000000000000000000000000000011"))
+    const letra = "11111111111111111111111111111111";
+    const num = -5;
+    console.log(intToBin32(-10000));
 }
 
-//main()
+main()
 
