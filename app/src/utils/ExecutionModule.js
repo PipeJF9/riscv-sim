@@ -1,11 +1,11 @@
 import { ADD_binToInt,SUB_binToInt,SLT_U_binToInt,intToBin32,AND_bin,OR_bin,XOR_bin,SLL_bin,SR_LA_bin, signedExtTo32, isNegBin} from "./OperationModule.js";
 
 // ✖
-export function registerStoring(registers, reg, data){
-    if (data.length !==32){
+export function registerStoring(storage, reg, data, memory){
+    if (data.length != 32){
         console.log('No se recibió un número de 32bits');
     }else{
-        registers[reg] = data;
+        storage[reg] = data;
     }
 }
 export function intructionExecution(descInst, registers){
@@ -174,6 +174,31 @@ export function intructionExecution(descInst, registers){
                     }
                     break;
             }
+            break;
+        case "0000011": //TIPO-S -> | imm[11:0] | rs1  | funct3 | rd   | opcode |
+            let memdir = intToBin32(ADD_binToInt(signedExtTo32(imm), registers[rs1])) ;
+            if (memdir in memory && parseInt(memdir,2)%4 == 0){
+                switch(funct3){
+                    case "000": // lb
+                        registerStoring(registers, rd, signedExtTo32(memory[memdir].slice(-8)));
+                        break;
+                    case "001": // lh
+                        registerStoring(registers, rd, signedExtTo32(memory[memdir].slice(-16)));
+                        break;
+                    case "010": // lw
+                        registerStoring(registers, rd, memory[memdir]);
+                        break;
+                    case "100": // lbu
+                        registerStoring(registers, rd, intToBin32(parseInt(memory[memdir].slice(-8)),2));
+                        break;
+                    case "101": // lhu
+                        registerStoring(registers, rd, intToBin32(parseInt(memory[memdir].slice(-16)),2));
+                        break;
+                }
+            } else{
+                registerStoring(registers, rd, intToBin32(0))
+            }
+            
             break;
     }
 }
