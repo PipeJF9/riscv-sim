@@ -110,19 +110,32 @@ export function intructionExecution(descInst, registers){
                     break;
             }
             break;
-        case "0110111": // lui ✔? //TIPO-U -> |     imm[31:12]     |  rd   | opcode |
+        case "0110111": // lui ✔?
             registerStoring(registers, rd, SLL_bin(intToBin32(parseInt(imm,2)), "1100"));
             break; 
         case "0010111": // aupic ✔?
             registerStoring(registers, rd, intToBin32(ADD_binToInt(registers["PC"],SLL_bin(intToBin32(parseInt(imm,2)), "1100"))));
-            break; 
+            break;
+        case "1101111": // jal ✔?
+            let num = signedExtTo32(imm.slice(0,1) + imm.slice(12,20) + imm.slice(11,12) + imm.slice(1,11) + "0");
+            num = intToBin32(parseInt(num,2)*2);
+            registerStoring(registers, rd, intToBin32(ADD_binToInt(registers["PC"],"100")));
+            registerStoring(registers,"PC", intToBin32(ADD_binToInt(num, registers["PC"])));
+            break;
+        case "1100111": // jalr ✔?
+            if (funct3 == "000"){
+                const dir = intToBin32(ADD_binToInt(signedExtTo32(imm), registers[rs1]));
+                registerStoring(registers, rd, intToBin32(ADD_binToInt(registers["PC"],"100")));
+                registerStoring(registers,"PC",dir.slice(0,31) + "0");
+            }
+            break;
     }
 }
 
 let regs = {
-    "PC":"00000000000000000000000000000100",
-    "00000": "11111111111111111111111111111111",
-    "00001": "11111111111111111111111111111110",
+    "PC":"00000000000000000000000000000000",
+    "00000": "00000000000000000000000000000000",
+    "00001": "00000000000000000000000000000000",
     "00010": "00000000000000000000000000000000",
     "00011": "00000000000000000000000000000000",
     "00100": "00000000000000000000000000000000",
@@ -155,17 +168,17 @@ let regs = {
     "11111": "00000000000000000000000000000000",
 }
 
-//|        TIPO-I          |          TIPO-U           |
+//|        TIPO-I          |          TIPO-U y J          |
 // immx12 = 1000000000011, immx20 = 00000000000000000000
 let prueba = {
-    "opcode": "0010111",
+    "opcode": "1100111",
     "rd": "00000",
     "rs1": "00001",
     "rs2": "00010",
     //"funct7": "0100000",
-    "funct3": "010",
-    "imm":"11100000000000000111"
+    "funct3": "000",
+    "imm":"0000000001011"
 }
 
 intructionExecution(prueba, regs)
-console.log(regs["00000"])
+console.log(regs["PC"])

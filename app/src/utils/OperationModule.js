@@ -120,14 +120,19 @@ export function SR_LA_bin(AA, BB, isArith) {
     }
     return result.slice(0, 32);
 }
-
-
+export function valid_dir(dir){
+    const val = Math.abs(parseInt(dir,2)%4);
+    if (val == 0){
+        return true;
+    }else{
+        return false;
+    }
+}
 // "11111111111111111111111111111111" "10000000000000000000000000000001" 00000000000010000000000000000011
 function main(){
-    const letra = "10000000000000000011";
+    const letra = "1234567890qwertyuiop";
     const num = -5;
-    console.log();
-    console.log(SLL_bin(intToBin32(parseInt(letra,2)), "1100"));
+    console.log(letra.slice(0,1), letra.slice(12,20), letra.slice(11,12), letra.slice(1,11))
 }
 
 //main()
