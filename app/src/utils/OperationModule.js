@@ -130,9 +130,9 @@ export function valid_dir(dir){
 }
 // "11111111111111111111111111111111" "10000000000000000000000000000001" 00000000000010000000000000000011
 function main(){
-    const letra = "1234567890qwertyuiop";
+    const letra = "1234567890qw";
     const num = -5;
-    console.log(letra.slice(0,1), letra.slice(12,20), letra.slice(11,12), letra.slice(1,11))
+    console.log(letra.slice(0,1), letra.slice(11,12),letra.slice(1,7) ,letra.slice(7,11))
 }
 
 //main()

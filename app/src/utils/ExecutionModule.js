@@ -1,4 +1,4 @@
-import { ADD_binToInt,SUB_binToInt,SLT_U_binToInt,intToBin32,AND_bin,OR_bin,XOR_bin,SLL_bin,SR_LA_bin, signedExtTo32} from "./OperationModule.js";
+import { ADD_binToInt,SUB_binToInt,SLT_U_binToInt,intToBin32,AND_bin,OR_bin,XOR_bin,SLL_bin,SR_LA_bin, signedExtTo32, isNegBin} from "./OperationModule.js";
 
 // ✖
 export function registerStoring(registers, reg, data){
@@ -129,14 +129,60 @@ export function intructionExecution(descInst, registers){
                 registerStoring(registers,"PC",dir.slice(0,31) + "0");
             }
             break;
+        case "1100011": //TIPO-B -> | imm[12|10:5] | rs2  | rs1  | funct3 | imm[4:1|11] | opcode |
+            let dir = signedExtTo32(imm.slice(0,1) + imm.slice(11,12) + imm.slice(1,7) + imm.slice(7,11) + "0");
+            dir = intToBin32(ADD_binToInt(intToBin32(parseInt(dir,2)*2),registers["PC"]));
+            let n1 = parseInt(registers[rs1],2);
+            let n2 = parseInt(registers[rs2],2);
+            switch(funct3){
+                case "000": // beq ✔?
+                    if (n1 == n2){
+                        registerStoring(registers, "PC", dir)
+                    }
+                    break;
+                case "001": // bne ✔?
+                    if (n1 != n2){
+                        registerStoring(registers, "PC", dir)
+                    }
+                    break;
+                case "100": // blt ✔?
+                    if ((isNegBin(registers[rs1])==1 & isNegBin(registers[rs2])==-1) | (isNegBin(registers[rs1])==-1 & isNegBin(registers[rs2])==1)){
+                        n1 = n1*isNegBin(registers[rs1]);
+                        n2 = n2*isNegBin(registers[rs2]);
+                    }
+                    if (n1 < n2){
+                        registerStoring(registers, "PC", dir)
+                    }
+                    break;
+                case "101": // bge ✔?
+                    if ((isNegBin(registers[rs1])==1 & isNegBin(registers[rs2])==-1) | (isNegBin(registers[rs1])==-1 & isNegBin(registers[rs2])==1)){
+                        n1 = n1*isNegBin(registers[rs1]);
+                        n2 = n2*isNegBin(registers[rs2]);
+                    }
+                    if (n1 >= n2){
+                        registerStoring(registers, "PC", dir)
+                    }
+                    break;
+                case "110": // bltu ✔?
+                    if (n1 < n2){
+                        registerStoring(registers, "PC", dir)
+                    }
+                    break;
+                case "111": // bgeu ✔?
+                    if (n1 >= n2){
+                        registerStoring(registers, "PC", dir)
+                    }
+                    break;
+            }
+            break;
     }
 }
 
 let regs = {
-    "PC":"00000000000000000000000000000000",
+    "PC":"00000000000000000000000000000010",
     "00000": "00000000000000000000000000000000",
-    "00001": "00000000000000000000000000000000",
-    "00010": "00000000000000000000000000000000",
+    "00001": "10000000000000000000000001000000",
+    "00010": "00000000000000000000000001000000",
     "00011": "00000000000000000000000000000000",
     "00100": "00000000000000000000000000000000",
     "00101": "00000000000000000000000000000000",
@@ -171,13 +217,13 @@ let regs = {
 //|        TIPO-I          |          TIPO-U y J          |
 // immx12 = 1000000000011, immx20 = 00000000000000000000
 let prueba = {
-    "opcode": "1100111",
+    "opcode": "1100011",
     "rd": "00000",
     "rs1": "00001",
     "rs2": "00010",
     //"funct7": "0100000",
-    "funct3": "000",
-    "imm":"0000000001011"
+    "funct3": "101",
+    "imm":"000000000010"
 }
 
 intructionExecution(prueba, regs)
