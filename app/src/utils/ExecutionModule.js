@@ -175,30 +175,48 @@ export function intructionExecution(descInst, registers){
                     break;
             }
             break;
-        case "0000011": //TIPO-S -> | imm[11:0] | rs1  | funct3 | rd   | opcode |
-            let memdir = intToBin32(ADD_binToInt(signedExtTo32(imm), registers[rs1])) ;
-            if (memdir in memory && parseInt(memdir,2)%4 == 0){
-                switch(funct3){
-                    case "000": // lb
-                        registerStoring(registers, rd, signedExtTo32(memory[memdir].slice(-8)));
-                        break;
-                    case "001": // lh
-                        registerStoring(registers, rd, signedExtTo32(memory[memdir].slice(-16)));
-                        break;
-                    case "010": // lw
-                        registerStoring(registers, rd, memory[memdir]);
-                        break;
-                    case "100": // lbu
-                        registerStoring(registers, rd, intToBin32(parseInt(memory[memdir].slice(-8)),2));
-                        break;
-                    case "101": // lhu
-                        registerStoring(registers, rd, intToBin32(parseInt(memory[memdir].slice(-16)),2));
-                        break;
+        case "0000011": //TIPO-I LOAD -> | imm[11:0] | rs1  | funct3 | rd   | opcode |
+            const memdir = intToBin32(ADD_binToInt(signedExtTo32(imm), registers[rs1]));
+            if (parseInt(memdir,2)%4 == 0){
+                if (memdir in memory){
+                    switch(funct3){
+                        case "000": // lb
+                            registerStoring(registers, rd, signedExtTo32(memory[memdir].slice(-8)));
+                            break;
+                        case "001": // lh
+                            registerStoring(registers, rd, signedExtTo32(memory[memdir].slice(-16)));
+                            break;
+                        case "010": // lw
+                            registerStoring(registers, rd, memory[memdir]);
+                            break;
+                        case "100": // lbu
+                            registerStoring(registers, rd, intToBin32(parseInt(memory[memdir].slice(-8)),2));
+                            break;
+                        case "101": // lhu
+                            registerStoring(registers, rd, intToBin32(parseInt(memory[memdir].slice(-16)),2));
+                            break;
+                    }
+                } else{
+                    registerStoring(registers, rd, intToBin32(0));
                 }
-            } else{
-                registerStoring(registers, rd, intToBin32(0))
             }
             
+            break;
+        case "0100011": //TIPO-S
+            const memdirS = intToBin32(ADD_binToInt(signedExtTo32(imm), registers[rs1]));
+            if (parseInt(memdir,2)%4 == 0){
+                switch(funct3){
+                    case "000": // sb
+                        registerStoring(memory, memdirS, intToBin32(parseInt(registers[rs2].slice(-8))));
+                        break;
+                    case "001": //sh
+                        registerStoring(memory, memdirS, intToBin32(parseInt(registers[rs2].slice(-16))));
+                        break;
+                    case "010": //sw
+                        registerStoring(memory, memdirS, registers[rs2]);
+                        break;
+                }
+            }
             break;
     }
 }
