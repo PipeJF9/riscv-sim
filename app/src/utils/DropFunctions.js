@@ -1,4 +1,4 @@
-import { translateInstructionToMIPS } from './Converter';
+import { translateInstructionToRV32I } from './Converter';
 
 let isHighlight = false;
 export const setIsHighlight = (value) => {
@@ -38,7 +38,7 @@ export const handleDrop = (e, setIsHighlight, setMipsInput, setHexInput) => {
     let originalInstructions = '';
 
     instructionsArray.forEach(instruction => {
-      const translated = translateInstructionToMIPS(instruction.trim());
+      const translated = translateInstructionToRV32I(instruction.trim());
       translatedInstructions += `${translated}\n`;
       originalInstructions += `${instruction.trim()}\n`;
     });
