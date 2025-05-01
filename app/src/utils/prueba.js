@@ -9,7 +9,8 @@ const instructions = [
     "sw x10, 16(x11)",
     "beq x12, x13, 8",
     "jal x14, 1024",
-    "lui x15, 4096"
+    "lui x15, 4096",
+    "jalr x1, 0(x10)"
 ];
 
 const instructionhex = [
@@ -17,11 +18,12 @@ const instructionhex = [
     "00A30293",
     "00532323",
     "123452B7",
-    "020002EF"
+    "020002EF",
+    "000500e7"
 ];
-for (let i = 0; i < instructionhex.length; i++) {
-    const ins = instructionhex[i];
-    const translated = translateRISCV({hex:ins});
+for (let i = 0; i < instructions.length; i++) {
+    const ins = instructions[i];
+    const translated = translateRISCV({instruction:ins});
     console.log(`Instruction: ${ins}`);
     console.log(`binary: ${translated.binary}`);
     console.log(`Hexadecimal: ${translated.hex}`);

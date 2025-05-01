@@ -96,6 +96,9 @@ export function translateInstructionToHex(instruction) {
     if (parenthesisMatch) {
         const [_, mnemonic, rd, offset, rs] = parenthesisMatch;
         processedInstruction = `${mnemonic} ${rd}, ${offset}, ${rs}`;
+        if (mnemonic === "jalr"){
+            processedInstruction = `${mnemonic} ${rd}, ${rs}, ${offset}`;
+        }
         instruction = processedInstruction;
     }
     const parts = instruction.trim().split(/\s+|,/).filter(Boolean);
@@ -199,7 +202,7 @@ export function translateInstructionToHex(instruction) {
     return [binary, binary_parts];
 }
 
-// Funciones auxiliares para registros e inmediatos
+// Auxiliary function to get the binary representation of a register
 function getRegisterBinary(register) {
     if(register[0] === 'x') {
         const regNum = parseInt(register.replace('x', ''), 10);
@@ -209,6 +212,7 @@ function getRegisterBinary(register) {
     }
 }
 
+// Auxiliary function to get the immediate value in binary format
 function getImmediateBinary(value, bits) {
     const num = parseInt(value, 10);
     if (num < 0) {
