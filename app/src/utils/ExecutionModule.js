@@ -1,14 +1,14 @@
 import { ADD_binToInt,SUB_binToInt,SLT_U_binToInt,intToBin32,AND_bin,OR_bin,XOR_bin,SLL_bin,SR_LA_bin, signedExtTo32, isNegBin} from "./OperationModule.js";
 
 // ✖
-export function registerStoring(storage, reg, data, memory){
+export function Storing(storage, src, data){
     if (data.length != 32){
         console.log('No se recibió un número de 32bits');
     }else{
-        storage[reg] = data;
+        storage[src] = data;
     }
 }
-export function intructionExecution(descInst, registers){
+export function intructionExecution(descInst, regs, mem){
     let opcode = descInst.opcode;
     let rd;
     if ('rd' in descInst) {
@@ -40,37 +40,37 @@ export function intructionExecution(descInst, registers){
             switch(funct7){
                 case "0100000":
                     if (funct3=="000"){ // sub ✔?
-                        registerStoring(registers, rd, intToBin32(SUB_binToInt(registers[rs1],registers[rs2])));
+                        Storing(regs, rd, intToBin32(SUB_binToInt(regs[rs1],regs[rs2])));
                     }
                     if (funct3=="101"){ // sra ✔?
-                        registerStoring(registers, rd, SR_LA_bin(registers[rs1],registers[rs2],1));
+                        Storing(regs, rd, SR_LA_bin(regs[rs1],regs[rs2],1));
                     }
                     break;
                 case "0000000":
                     switch(funct3){
                         case "000": // add ✔?
-                            registerStoring(registers, rd, intToBin32(ADD_binToInt(registers[rs1],registers[rs2])));
+                            Storing(regs, rd, intToBin32(ADD_binToInt(regs[rs1],regs[rs2])));
                             break;
                         case "001": // sll ✔?
-                            registerStoring(registers, rd, SLL_bin(registers[rs1],registers[rs2]));
+                            Storing(regs, rd, SLL_bin(regs[rs1],regs[rs2]));
                             break;
                         case "010": // slt ✔?
-                            registerStoring(registers, rd, intToBin32(SLT_U_binToInt(registers[rs1],registers[rs2])));
+                            Storing(regs, rd, intToBin32(SLT_U_binToInt(regs[rs1],regs[rs2])));
                             break;
                         case "011": // sltu ✔?
-                            registerStoring(registers, rd, intToBin32(SLT_U_binToInt(registers[rs1],registers[rs2],1)));
+                            Storing(regs, rd, intToBin32(SLT_U_binToInt(regs[rs1],regs[rs2],1)));
                             break;
                         case "100": // xor ✔?
-                            registerStoring(registers, rd, XOR_bin(registers[rs1],registers[rs2]));
+                            Storing(regs, rd, XOR_bin(regs[rs1],regs[rs2]));
                             break;
                         case "101": // srl ✔?
-                            registerStoring(registers, rd, SR_LA_bin(registers[rs1],registers[rs2]));
+                            Storing(regs, rd, SR_LA_bin(regs[rs1],regs[rs2]));
                             break;
                         case "110": // or ✔?
-                            registerStoring(registers, rd, OR_bin(registers[rs1],registers[rs2]));
+                            Storing(regs, rd, OR_bin(regs[rs1],regs[rs2]));
                             break;
                         case "111": // and ✔?
-                            registerStoring(registers, rd, AND_bin(registers[rs1],registers[rs2]));
+                            Storing(regs, rd, AND_bin(regs[rs1],regs[rs2]));
                             break;
                     }
                     break;
@@ -81,151 +81,161 @@ export function intructionExecution(descInst, registers){
             let bExt = signedExtTo32(imm);
             switch(funct3){
                 case "000": // addi ✔?
-                    registerStoring(registers, rd, intToBin32(ADD_binToInt(registers[rs1], bExt)));
+                    Storing(regs, rd, intToBin32(ADD_binToInt(regs[rs1], bExt)));
                     break;
                 case "001":
                     if (funct7 == "0000000"){ // slli ✔?
-                        registerStoring(registers, rd, SLL_bin(registers[rs1],imm));}
+                        Storing(regs, rd, SLL_bin(regs[rs1],imm));}
                     break;
                 case "010": // slti ✔?
-                    registerStoring(registers, rd, intToBin32(SLT_U_binToInt(registers[rs1], bExt)));
+                    Storing(regs, rd, intToBin32(SLT_U_binToInt(regs[rs1], bExt)));
                     break;
                 case "011": // sltiu ✔?
-                    registerStoring(registers, rd, intToBin32(SLT_U_binToInt(registers[rs1], bExt, 1)));
+                    Storing(regs, rd, intToBin32(SLT_U_binToInt(regs[rs1], bExt, 1)));
                     break;
                 case "100": // xori ✔?
-                    registerStoring(registers, rd, XOR_bin(registers[rs1], bExt));
+                    Storing(regs, rd, XOR_bin(regs[rs1], bExt));
                     break;
                 case "101":
                     if (funct7 == "0000000"){ // srli ✔?
-                        registerStoring(registers, rd, SR_LA_bin(registers[rs1],imm));}
+                        Storing(regs, rd, SR_LA_bin(regs[rs1],imm));}
                     if (funct7 == "0100000"){ // srai ✔?
-                        registerStoring(registers, rd, SR_LA_bin(registers[rs1],imm,1));}
+                        Storing(regs, rd, SR_LA_bin(regs[rs1],imm,1));}
                     break;
                 case "110": // ori ✔?
-                    registerStoring(registers, rd, OR_bin(registers[rs1], bExt));
+                    Storing(regs, rd, OR_bin(regs[rs1], bExt));
                     break;
                 case "111": // andi ✔?
-                    registerStoring(registers, rd, AND_bin(registers[rs1], bExt));
+                    Storing(regs, rd, AND_bin(regs[rs1], bExt));
                     break;
             }
             break;
         case "0110111": // lui ✔?
-            registerStoring(registers, rd, SLL_bin(intToBin32(parseInt(imm,2)), "1100"));
+            Storing(regs, rd, SLL_bin(intToBin32(parseInt(imm,2)), "1100"));
             break; 
         case "0010111": // aupic ✔?
-            registerStoring(registers, rd, intToBin32(ADD_binToInt(registers["PC"],SLL_bin(intToBin32(parseInt(imm,2)), "1100"))));
+            Storing(regs, rd, intToBin32(ADD_binToInt(regs["PC"],SLL_bin(intToBin32(parseInt(imm,2)), "1100"))));
             break;
         case "1101111": // jal ✔?
             let num = signedExtTo32(imm.slice(0,1) + imm.slice(12,20) + imm.slice(11,12) + imm.slice(1,11) + "0");
             num = intToBin32(parseInt(num,2)*2);
-            registerStoring(registers, rd, intToBin32(ADD_binToInt(registers["PC"],"100")));
-            registerStoring(registers,"PC", intToBin32(ADD_binToInt(num, registers["PC"])));
+            Storing(regs, rd, intToBin32(ADD_binToInt(regs["PC"],"100")));
+            Storing(regs,"PC", intToBin32(ADD_binToInt(num, regs["PC"])));
             break;
         case "1100111": // jalr ✔?
             if (funct3 == "000"){
-                const dir = intToBin32(ADD_binToInt(signedExtTo32(imm), registers[rs1]));
-                registerStoring(registers, rd, intToBin32(ADD_binToInt(registers["PC"],"100")));
-                registerStoring(registers,"PC",dir.slice(0,31) + "0");
+                const dir = intToBin32(ADD_binToInt(signedExtTo32(imm), regs[rs1]));
+                if (parseInt(dir.slice(0,31) + "0",2)%4 == 0) {
+                    Storing(regs, rd, intToBin32(ADD_binToInt(regs["PC"],"100")));
+                    Storing(regs,"PC",dir.slice(0,31) + "0");
+                } else {
+                    return "Dirección calculada no válida";
+                }
             }
             break;
         case "1100011": //TIPO-B -> | imm[12|10:5] | rs2  | rs1  | funct3 | imm[4:1|11] | opcode |
             let dir = signedExtTo32(imm.slice(0,1) + imm.slice(11,12) + imm.slice(1,7) + imm.slice(7,11) + "0");
-            dir = intToBin32(ADD_binToInt(intToBin32(parseInt(dir,2)*2),registers["PC"]));
-            let n1 = parseInt(registers[rs1],2);
-            let n2 = parseInt(registers[rs2],2);
+            dir = intToBin32(ADD_binToInt(intToBin32(parseInt(dir,2)*2),regs["PC"]));
+            let n1 = parseInt(regs[rs1],2);
+            let n2 = parseInt(regs[rs2],2);
             switch(funct3){
                 case "000": // beq ✔?
                     if (n1 == n2){
-                        registerStoring(registers, "PC", dir)
+                        Storing(regs, "PC", dir);
                     }
                     break;
                 case "001": // bne ✔?
                     if (n1 != n2){
-                        registerStoring(registers, "PC", dir)
+                        Storing(regs, "PC", dir);
                     }
                     break;
                 case "100": // blt ✔?
-                    if ((isNegBin(registers[rs1])==1 & isNegBin(registers[rs2])==-1) | (isNegBin(registers[rs1])==-1 & isNegBin(registers[rs2])==1)){
-                        n1 = n1*isNegBin(registers[rs1]);
-                        n2 = n2*isNegBin(registers[rs2]);
+                    if ((isNegBin(regs[rs1])==1 & isNegBin(regs[rs2])==-1) | (isNegBin(regs[rs1])==-1 & isNegBin(regs[rs2])==1)){
+                        n1 = n1*isNegBin(regs[rs1]);
+                        n2 = n2*isNegBin(regs[rs2]);
                     }
                     if (n1 < n2){
-                        registerStoring(registers, "PC", dir)
+                        Storing(regs, "PC", dir);
                     }
                     break;
                 case "101": // bge ✔?
-                    if ((isNegBin(registers[rs1])==1 & isNegBin(registers[rs2])==-1) | (isNegBin(registers[rs1])==-1 & isNegBin(registers[rs2])==1)){
-                        n1 = n1*isNegBin(registers[rs1]);
-                        n2 = n2*isNegBin(registers[rs2]);
+                    if ((isNegBin(regs[rs1])==1 & isNegBin(regs[rs2])==-1) | (isNegBin(regs[rs1])==-1 & isNegBin(regs[rs2])==1)){
+                        n1 = n1*isNegBin(regs[rs1]);
+                        n2 = n2*isNegBin(regs[rs2]);
                     }
                     if (n1 >= n2){
-                        registerStoring(registers, "PC", dir)
+                        Storing(regs, "PC", dir);
                     }
                     break;
                 case "110": // bltu ✔?
                     if (n1 < n2){
-                        registerStoring(registers, "PC", dir)
+                        Storing(regs, "PC", dir);
                     }
                     break;
                 case "111": // bgeu ✔?
                     if (n1 >= n2){
-                        registerStoring(registers, "PC", dir)
+                        Storing(regs, "PC", dir);
                     }
                     break;
             }
             break;
         case "0000011": //TIPO-I LOAD -> | imm[11:0] | rs1  | funct3 | rd   | opcode |
-            const memdir = intToBin32(ADD_binToInt(signedExtTo32(imm), registers[rs1]));
-            if (parseInt(memdir,2)%4 == 0){
-                if (memdir in memory){
+            const memdirL = intToBin32(ADD_binToInt(signedExtTo32(imm), regs[rs1]));
+            if (parseInt(memdirL,2)%4 == 0){
+                if (memdirL in mem){
                     switch(funct3){
-                        case "000": // lb
-                            registerStoring(registers, rd, signedExtTo32(memory[memdir].slice(-8)));
+                        case "000": // lb ✔?
+                            Storing(regs, rd, signedExtTo32(mem[memdirL].slice(-8)));
                             break;
-                        case "001": // lh
-                            registerStoring(registers, rd, signedExtTo32(memory[memdir].slice(-16)));
+                        case "001": // lh ✔?
+                            Storing(regs, rd, signedExtTo32(mem[memdirL].slice(-16)));
                             break;
-                        case "010": // lw
-                            registerStoring(registers, rd, memory[memdir]);
+                        case "010": // lw ✔?
+                            Storing(regs, rd, mem[memdirL]);
                             break;
-                        case "100": // lbu
-                            registerStoring(registers, rd, intToBin32(parseInt(memory[memdir].slice(-8)),2));
+                        case "100": // lbu ✔?
+                            Storing(regs, rd, intToBin32(parseInt(mem[memdirL].slice(-8),2)));
                             break;
-                        case "101": // lhu
-                            registerStoring(registers, rd, intToBin32(parseInt(memory[memdir].slice(-16)),2));
+                        case "101": // lhu ✔?
+                            Storing(regs, rd, intToBin32(parseInt(mem[memdirL].slice(-16),2)));
                             break;
                     }
-                } else{
-                    registerStoring(registers, rd, intToBin32(0));
+                } else {
+                    console.log(memdirL)
+                    Storing(regs, rd, intToBin32(0));
                 }
+            } else {
+                return "Dirección calculada no válida";
             }
             
             break;
-        case "0100011": //TIPO-S
-            const memdirS = intToBin32(ADD_binToInt(signedExtTo32(imm), registers[rs1]));
-            if (parseInt(memdir,2)%4 == 0){
+        case "0100011": //TIPO-S -> | imm[11:5] | rs2  | rs1  | funct3 | imm[4:0] | opcode |
+            const memdirS = intToBin32(ADD_binToInt(signedExtTo32(imm), regs[rs1]));
+            console.log(memdirS)
+            if (parseInt(memdirS,2)%4 == 0){
                 switch(funct3){
-                    case "000": // sb
-                        registerStoring(memory, memdirS, intToBin32(parseInt(registers[rs2].slice(-8))));
+                    case "000": // sb ✔?
+                        Storing(mem, memdirS, intToBin32(parseInt(regs[rs2].slice(-8),2)));
                         break;
-                    case "001": //sh
-                        registerStoring(memory, memdirS, intToBin32(parseInt(registers[rs2].slice(-16))));
+                    case "001": //sh ✔?
+                        Storing(mem, memdirS, intToBin32(parseInt(regs[rs2].slice(-16),2)));
                         break;
-                    case "010": //sw
-                        registerStoring(memory, memdirS, registers[rs2]);
+                    case "010": //sw ✔?
+                        Storing(mem, memdirS, regs[rs2]);
                         break;
                 }
+            }else{
+                return "Dirección calculada no válida";
             }
             break;
     }
 }
 
-let regs = {
+let registers = {
     "PC":"00000000000000000000000000000010",
     "00000": "00000000000000000000000000000000",
-    "00001": "10000000000000000000000001000000",
-    "00010": "00000000000000000000000001000000",
+    "00001": "00000000000000000000000000000001",
+    "00010": "10000000000000011000000110000000",
     "00011": "00000000000000000000000000000000",
     "00100": "00000000000000000000000000000000",
     "00101": "00000000000000000000000000000000",
@@ -257,17 +267,26 @@ let regs = {
     "11111": "00000000000000000000000000000000",
 }
 
+let memory = {
+    "00000000000000000000000000000000": "00000000000000000000000000000000",
+    "00000000000000000000000000001000": "11111111111111111111111111111111"
+}
+
 //|        TIPO-I          |          TIPO-U y J          |
 // immx12 = 1000000000011, immx20 = 00000000000000000000
 let prueba = {
-    "opcode": "1100011",
+    "opcode": "0100011",
     "rd": "00000",
     "rs1": "00001",
     "rs2": "00010",
     //"funct7": "0100000",
-    "funct3": "101",
-    "imm":"000000000010"
+    "funct3": "000",
+    "imm":"000000000111"
+} 
+
+function main (){
+    intructionExecution(prueba, registers, memory)
+    console.log(memory["00000000000000000000000000001000"])
 }
 
-intructionExecution(prueba, regs)
-console.log(regs["PC"])
+main()
