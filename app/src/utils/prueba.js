@@ -1,15 +1,16 @@
 import {translateRISCV} from './Compilator.js';
-
+import { intructionExecution } from './ExecutionModule.js';
 
 const instructions = [
-    "add t1, t2, t3",
-    "sub x5, x6, x31",
-    "addi x5, x6, 10",
-    "lw x8, 3(x9)",
-    "sw x10, 16(x11)",
-    "beq x12, x13, 8",
-    "jal x14, 1024",
-    "lui x15, 4096"
+    "add x1, x2, x3",
+    "sub x1, x2, x3",
+    "addi x1, x2, -4",
+    "lw x1, 5(x0)",
+    "sw x1, -3(x3)",
+    "beq x1, x1, 2",
+    "jal x1, 1",
+    "lui x1, 1",
+    "jalr x1, 10(x3)"
 ];
 
 const instructionhex = [
@@ -19,13 +20,55 @@ const instructionhex = [
     "123452B7",
     "020002EF"
 ];
-for (let i = 0; i < instructionhex.length; i++) {
-    const ins = instructionhex[i];
-    const translated = translateRISCV({hex:ins});
-    console.log(`Instruction: ${ins}`);
-    console.log(`binary: ${translated.binary}`);
-    console.log(`Hexadecimal: ${translated.hex}`);
-    console.log(`Instruction: ${translated.instruction}`);
-    console.log(`binary parts: ${JSON.stringify(translated.binary_parts, null, 2)}`); // Properly format binary_parts
-    console.log('---');
+
+let memory = {
+    "00000000000000000000000000001100": "10000000000000000000000000000000",
+    "00000000000000000000000000001000": "11111111111111111111111111111111"
 }
+
+let registers = {
+    "PC":"00000000000000000000000000000100",
+    "00000": "00000000000000000000000000000000",
+    "00001": "00000000000000000000000000000001",
+    "00010": "00000000000000000000000000000010",
+    "00011": "00000000000000000000000000000011",
+    "00100": "00000000000000000000000000000000",
+    "00101": "00000000000000000000000000000000",
+    "00110": "00000000000000000000000000000000",
+    "00111": "00000000000000000000000000000000",
+    "01000": "00000000000000000000000000000000",
+    "01001": "00000000000000000000000000000000",
+    "01010": "00000000000000000000000000000000",
+    "01011": "00000000000000000000000000000000",
+    "01100": "00000000000000000000000000000000",
+    "01101": "00000000000000000000000000000000",
+    "01110": "00000000000000000000000000000000",
+    "01111": "00000000000000000000000000000000",
+    "10000": "00000000000000000000000000000000",
+    "10001": "00000000000000000000000000000000",
+    "10010": "00000000000000000000000000000000",
+    "10011": "00000000000000000000000000000000",
+    "10100": "00000000000000000000000000000000",
+    "10101": "00000000000000000000000000000000",
+    "10110": "00000000000000000000000000000000",
+    "10111": "00000000000000000000000000000000",
+    "11000": "00000000000000000000000000000000",
+    "11001": "00000000000000000000000000000000",
+    "11010": "00000000000000000000000000000000",
+    "11011": "00000000000000000000000000000000",
+    "11100": "00000000000000000000000000000000",
+    "11101": "00000000000000000000000000000000",
+    "11110": "00000000000000000000000000000000",
+    "11111": "00000000000000000000000000000000",
+}
+
+
+const ins = instructions[8];
+const translated = translateRISCV({instruction:ins});
+//console.log(`Instruction: ${ins}`);
+//console.log(`binary: ${translated.binary}`);
+//console.log(`Hexadecimal: ${translated.hex}`);
+//console.log(`Instruction: ${translated.instruction}`);
+console.log(`binary parts: ${JSON.stringify(translated.binary_parts, null, 2)}`); // Properly format binary_parts
+intructionExecution(translated.binary_parts,registers, memory)
+console.log(registers["PC"]);

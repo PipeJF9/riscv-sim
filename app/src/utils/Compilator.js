@@ -13,7 +13,6 @@ export function binaryToHex(binaryString) {
 
     return "0x" + hexString.toUpperCase();
 }
-
 export function hexToBinary(hex) {
     let binary = '';
     for (let i = 0; i < hex.length; i++) {
@@ -22,12 +21,9 @@ export function hexToBinary(hex) {
     }
     return binary;
 }
-
 export function sum(a, b) {
     return a + b;
 }
-
-
 const regMap = {
     "zero": "00000", "ra": "00001", "sp": "00010", "gp": "00011",
     "tp": "00100", "t0": "00101", "t1": "00110", "t2": "00111",
@@ -38,7 +34,6 @@ const regMap = {
     "s8": "11000", "s9": "11001", "s10": "11010", "s11": "11011",
     "t3": "11100", "t4": "11101", "t5": "11110", "t6": "11111"
 };
-
 const opcodeMap = {
     // U-type instructions 
     "lui": { opcode: "0110111", type: "U" },
@@ -85,7 +80,6 @@ const opcodeMap = {
     "or": { opcode: "0110011", funct3: "110", funct7: "0000000", type: "R" },
     "and": { opcode: "0110011", funct3: "111", funct7: "0000000", type: "R" }
 };
-
 // Function to translate an instruction to its binary representation
 // and then to hexadecimal format
 export function translateInstructionToHex(instruction) {
@@ -96,6 +90,9 @@ export function translateInstructionToHex(instruction) {
     if (parenthesisMatch) {
         const [_, mnemonic, rd, offset, rs] = parenthesisMatch;
         processedInstruction = `${mnemonic} ${rd}, ${offset}, ${rs}`;
+        if (mnemonic === "jalr"){
+            processedInstruction = `${mnemonic} ${rd}, ${rs}, ${offset}`;
+        }
         instruction = processedInstruction;
     }
     const parts = instruction.trim().split(/\s+|,/).filter(Boolean);
@@ -126,7 +123,7 @@ export function translateInstructionToHex(instruction) {
             const rd_i = getRegisterBinary(parts[1]);
             let rs1_i = 0;
             let imm_i = 0;
-            if(["lb", "lh", "lw", "lbu", "lhu"].includes(mnemonic)) {
+            if(["lb", "lh", "lw", "lbu", "lhu", "jarl"].includes(mnemonic)) {
                 imm_i = getImmediateBinary(parts[2], 12);
                 rs1_i = getRegisterBinary(parts[3]);
             }else{
@@ -154,8 +151,7 @@ export function translateInstructionToHex(instruction) {
                 rs2: rs2_s,
                 rs1: rs1_s,
                 funct3: mapping.funct3,
-                imm11_5: imm11_5,
-                imm4_0: imm4_0,
+                imm: imm11_5 + imm4_0,
                 opcode: mapping.opcode
             };
             break;
@@ -164,8 +160,9 @@ export function translateInstructionToHex(instruction) {
             const rs2_b = getRegisterBinary(parts[2]);
             const offset_b = getImmediateBinary(parts[3], 13); // 12 bits + signo
             binary = `${offset_b[0]}${offset_b.slice(2,8)}${rs2_b}${rs1_b}${mapping.funct3}${offset_b.slice(8,12)}${offset_b[1]}${mapping.opcode}`;
+            //console.log(binary)
             binary_parts = {
-                offset: offset_b,
+                imm: offset_b,
                 rs2: rs2_b,
                 rs1: rs1_b,
                 funct3: mapping.funct3,
@@ -182,12 +179,13 @@ export function translateInstructionToHex(instruction) {
                 opcode: mapping.opcode
             };
             break;
-        case "J":
+        case "J": // inst.slice(0,20)
             const rd_j = getRegisterBinary(parts[1]);
             const offset_j = getImmediateBinary(parts[2], 21); // 20 bits + signo
+            console.log(offset_j)
             binary = `${offset_j[0]}${offset_j.slice(10,20)}${offset_j[9]}${offset_j.slice(1,9)}${rd_j}${mapping.opcode}`;
             binary_parts = {
-                offset: offset_j,
+                imm: offset_j,
                 rd: rd_j,
                 opcode: mapping.opcode
             };
@@ -208,7 +206,6 @@ function getRegisterBinary(register) {
         return regMap[register];
     }
 }
-
 function getImmediateBinary(value, bits) {
     const num = parseInt(value, 10);
     if (num < 0) {
@@ -216,7 +213,6 @@ function getImmediateBinary(value, bits) {
     }
     return num.toString(2).padStart(bits, '0');
 }
-
 const regMaph = {
     "00000": "zero", "00001": "ra", "00010": "sp", "00011": "gp",
     "00100": "tp", "00101": "t0", "00110": "t1", "00111": "t2",
@@ -228,7 +224,6 @@ const regMaph = {
     "11011": "s11", "11100": "t3", "11101": "t4",
     "11110": "t5", "11111": "t6"
 };
-
 
 export function translateHexToInstruction(hex) {
     const binary = hexToBinary(hex).padStart(32, '0');

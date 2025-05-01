@@ -110,19 +110,19 @@ export function intructionExecution(descInst, regs, mem){
                     break;
             }
             break;
-        case "0110111": // lui ✔?
+        case "0110111": // lui ✔?  TIPO-U -> | imm[31:12] | rd      | opcode   |
             Storing(regs, rd, SLL_bin(intToBin32(parseInt(imm,2)), "1100"));
             break; 
         case "0010111": // aupic ✔?
             Storing(regs, rd, intToBin32(ADD_binToInt(regs["PC"],SLL_bin(intToBin32(parseInt(imm,2)), "1100"))));
             break;
-        case "1101111": // jal ✔?
-            let num = signedExtTo32(imm.slice(0,1) + imm.slice(12,20) + imm.slice(11,12) + imm.slice(1,11) + "0");
+        case "1101111": // jal ✔?  TIPO-J -> | imm[20] imm[10:1] imm[11] imm[19:12] | rd | opcode |
+            let num = signedExtTo32(imm);
             num = intToBin32(parseInt(num,2)*2);
             Storing(regs, rd, intToBin32(ADD_binToInt(regs["PC"],"100")));
             Storing(regs,"PC", intToBin32(ADD_binToInt(num, regs["PC"])));
             break;
-        case "1100111": // jalr ✔?
+        case "1100111": // jalr ✔? -> |  imm[11:0]  |  rs1  | funct3 |  rd   | opcode |
             if (funct3 == "000"){
                 const dir = intToBin32(ADD_binToInt(signedExtTo32(imm), regs[rs1]));
                 if (parseInt(dir.slice(0,31) + "0",2)%4 == 0) {
@@ -134,7 +134,7 @@ export function intructionExecution(descInst, regs, mem){
             }
             break;
         case "1100011": //TIPO-B -> | imm[12|10:5] | rs2  | rs1  | funct3 | imm[4:1|11] | opcode |
-            let dir = signedExtTo32(imm.slice(0,1) + imm.slice(11,12) + imm.slice(1,7) + imm.slice(7,11) + "0");
+            let dir = signedExtTo32(imm);
             dir = intToBin32(ADD_binToInt(intToBin32(parseInt(dir,2)*2),regs["PC"]));
             let n1 = parseInt(regs[rs1],2);
             let n2 = parseInt(regs[rs2],2);
@@ -201,7 +201,6 @@ export function intructionExecution(descInst, regs, mem){
                             break;
                     }
                 } else {
-                    console.log(memdirL)
                     Storing(regs, rd, intToBin32(0));
                 }
             } else {
@@ -211,7 +210,6 @@ export function intructionExecution(descInst, regs, mem){
             break;
         case "0100011": //TIPO-S -> | imm[11:5] | rs2  | rs1  | funct3 | imm[4:0] | opcode |
             const memdirS = intToBin32(ADD_binToInt(signedExtTo32(imm), regs[rs1]));
-            console.log(memdirS)
             if (parseInt(memdirS,2)%4 == 0){
                 switch(funct3){
                     case "000": // sb ✔?
@@ -231,62 +229,21 @@ export function intructionExecution(descInst, regs, mem){
     }
 }
 
-let registers = {
-    "PC":"00000000000000000000000000000010",
-    "00000": "00000000000000000000000000000000",
-    "00001": "00000000000000000000000000000001",
-    "00010": "10000000000000011000000110000000",
-    "00011": "00000000000000000000000000000000",
-    "00100": "00000000000000000000000000000000",
-    "00101": "00000000000000000000000000000000",
-    "00110": "00000000000000000000000000000000",
-    "00111": "00000000000000000000000000000000",
-    "01000": "00000000000000000000000000000000",
-    "01001": "00000000000000000000000000000000",
-    "01010": "00000000000000000000000000000000",
-    "01011": "00000000000000000000000000000000",
-    "01100": "00000000000000000000000000000000",
-    "01101": "00000000000000000000000000000000",
-    "01110": "00000000000000000000000000000000",
-    "01111": "00000000000000000000000000000000",
-    "10000": "00000000000000000000000000000000",
-    "10001": "00000000000000000000000000000000",
-    "10010": "00000000000000000000000000000000",
-    "10011": "00000000000000000000000000000000",
-    "10100": "00000000000000000000000000000000",
-    "10101": "00000000000000000000000000000000",
-    "10110": "00000000000000000000000000000000",
-    "10111": "00000000000000000000000000000000",
-    "11000": "00000000000000000000000000000000",
-    "11001": "00000000000000000000000000000000",
-    "11010": "00000000000000000000000000000000",
-    "11011": "00000000000000000000000000000000",
-    "11100": "00000000000000000000000000000000",
-    "11101": "00000000000000000000000000000000",
-    "11110": "00000000000000000000000000000000",
-    "11111": "00000000000000000000000000000000",
-}
-
-let memory = {
-    "00000000000000000000000000000000": "00000000000000000000000000000000",
-    "00000000000000000000000000001000": "11111111111111111111111111111111"
-}
-
 //|        TIPO-I          |          TIPO-U y J          |
-// immx12 = 1000000000011, immx20 = 00000000000000000000
+// immx12 = 1000000000011, immx20 = 00000000000000000000 111111111001
 let prueba = {
-    "opcode": "0100011",
+    "opcode": "0000000",
     "rd": "00000",
     "rs1": "00001",
-    "rs2": "00010",
+    "rs2": "11100",
     //"funct7": "0100000",
     "funct3": "000",
-    "imm":"000000000111"
+    "imm":"111111111000"
 } 
 
 function main (){
     intructionExecution(prueba, registers, memory)
-    console.log(memory["00000000000000000000000000001000"])
+    console.log(registers["00000"])
 }
 
-main()
+//main()
